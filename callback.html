@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>TikTok Auth Callback</title>
+  <style>
+    body { font-family: monospace; padding: 40px; background: #111; color: #eee; }
+    #code-box { background: #222; border: 1px solid #555; padding: 20px; font-size: 18px; word-break: break-all; margin: 20px 0; }
+    button { padding: 10px 20px; font-size: 16px; cursor: pointer; background: #2196F3; color: white; border: none; border-radius: 4px; }
+    button:hover { background: #1976D2; }
+  </style>
+</head>
+<body>
+  <h2>TikTok Authorization</h2>
+  <div id="status">Reading authorization code...</div>
+  <div id="code-box" style="display:none"></div>
+  <button id="copy-btn" style="display:none" onclick="copyCode()">Copy Code</button>
+  <p id="instructions" style="display:none">Paste this code into the terminal where tiktok_auth.py is waiting.</p>
+
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const code = params.get('code');
+    const error = params.get('error');
+    const state = params.get('state');
+
+    if (code) {
+      document.getElementById('status').innerText = 'Authorization successful! Your code:';
+      const box = document.getElementById('code-box');
+      box.innerText = code;
+      box.style.display = 'block';
+      document.getElementById('copy-btn').style.display = 'inline-block';
+      document.getElementById('instructions').style.display = 'block';
+    } else if (error) {
+      document.getElementById('status').innerText = 'Authorization failed: ' + error;
+    } else {
+      document.getElementById('status').innerText = 'No code received. Did you authorize the app?';
+    }
+
+    function copyCode() {
+      const code = document.getElementById('code-box').innerText;
+      navigator.clipboard.writeText(code).then(() => {
+        document.getElementById('copy-btn').innerText = 'Copied!';
+        setTimeout(() => document.getElementById('copy-btn').innerText = 'Copy Code', 2000);
+      });
+    }
+  </script>
+</body>
+</html>
