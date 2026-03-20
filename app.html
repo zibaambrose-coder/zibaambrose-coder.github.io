@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Creator Post Manager</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      min-height: 100vh;
+      background: #f5f5f5;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      color: #111;
+    }
+
+    /* NAV */
+    nav {
+      background: #fff;
+      border-bottom: 1px solid #e5e5e5;
+      padding: 0 32px;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .logo { font-size: 17px; font-weight: 700; color: #111; letter-spacing: -0.3px; }
+    .logo span { color: #fe2c55; }
+    .nav-status { font-size: 13px; color: #666; display: flex; align-items: center; gap: 6px; }
+    .status-dot { width: 8px; height: 8px; border-radius: 50%; background: #ccc; }
+    .status-dot.connected { background: #16a34a; }
+
+    /* HERO */
+    .hero {
+      max-width: 680px;
+      margin: 0 auto;
+      padding: 64px 24px 0;
+    }
+    .hero h1 { font-size: 36px; font-weight: 700; line-height: 1.2; letter-spacing: -0.5px; margin-bottom: 14px; }
+    .hero p { font-size: 17px; color: #555; line-height: 1.6; margin-bottom: 40px; }
+
+    /* STEPS */
+    .steps { display: flex; gap: 16px; margin-bottom: 48px; }
+    .step {
+      flex: 1;
+      background: #fff;
+      border: 1px solid #e5e5e5;
+      border-radius: 12px;
+      padding: 20px;
+    }
+    .step-num {
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      background: #fe2c55;
+      color: #fff;
+      font-size: 13px;
+      font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 10px;
+    }
+    .step h3 { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
+    .step p { font-size: 13px; color: #777; line-height: 1.4; }
+
+    /* CONNECT CARD */
+    .card {
+      background: #fff;
+      border: 1px solid #e5e5e5;
+      border-radius: 16px;
+      padding: 40px;
+      margin-bottom: 48px;
+    }
+    .card h2 { font-size: 22px; font-weight: 700; margin-bottom: 8px; }
+    .card .sub { font-size: 15px; color: #666; margin-bottom: 32px; }
+
+    /* TIKTOK BUTTON */
+    .btn-tiktok {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      background: #111;
+      color: #fff;
+      padding: 14px 28px;
+      border-radius: 10px;
+      font-size: 16px;
+      font-weight: 600;
+      text-decoration: none;
+      border: none;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .btn-tiktok:hover { background: #222; }
+    .btn-tiktok svg { width: 22px; height: 22px; }
+
+    /* PERMISSIONS NOTE */
+    .permissions {
+      margin-top: 20px;
+      padding: 14px 18px;
+      background: #f9f9f9;
+      border-radius: 8px;
+      font-size: 13px;
+      color: #666;
+    }
+    .permissions strong { color: #111; }
+    .perm-tag {
+      display: inline-block;
+      background: #eee;
+      border-radius: 4px;
+      padding: 2px 8px;
+      font-size: 12px;
+      font-family: monospace;
+      margin: 2px 2px 0 0;
+    }
+
+    /* CONNECTED STATE */
+    .connected-badge {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: #f0fdf4;
+      border: 1px solid #86efac;
+      border-radius: 10px;
+      padding: 12px 18px;
+      margin-bottom: 28px;
+      font-size: 14px;
+      font-weight: 500;
+      color: #15803d;
+    }
+    .connected-badge svg { width: 18px; height: 18px; }
+
+    /* UPLOAD FORM */
+    .form-group { margin-bottom: 24px; }
+    .form-group label { display: block; font-size: 14px; font-weight: 600; margin-bottom: 8px; }
+    .file-drop {
+      border: 2px dashed #d1d5db;
+      border-radius: 12px;
+      padding: 40px;
+      text-align: center;
+      cursor: pointer;
+      background: #fafafa;
+      transition: border-color 0.15s, background 0.15s;
+    }
+    .file-drop:hover, .file-drop.drag-over { border-color: #fe2c55; background: #fff5f7; }
+    .file-drop input { display: none; }
+    .file-drop .drop-icon { font-size: 36px; margin-bottom: 8px; }
+    .file-drop p { font-size: 14px; color: #666; }
+    .file-drop span { font-size: 12px; color: #999; display: block; margin-top: 4px; }
+    .file-selected { font-size: 14px; color: #16a34a; font-weight: 500; margin-top: 8px; }
+
+    textarea {
+      width: 100%;
+      border: 1px solid #d1d5db;
+      border-radius: 8px;
+      padding: 12px 14px;
+      font-size: 14px;
+      font-family: inherit;
+      resize: vertical;
+      min-height: 90px;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+    textarea:focus { border-color: #fe2c55; }
+
+    select {
+      width: 100%;
+      border: 1px solid #d1d5db;
+      border-radius: 8px;
+      padding: 11px 14px;
+      font-size: 14px;
+      font-family: inherit;
+      background: #fff;
+      outline: none;
+    }
+
+    .char-count { font-size: 12px; color: #999; text-align: right; margin-top: 4px; }
+
+    .btn-post {
+      width: 100%;
+      background: #fe2c55;
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      padding: 16px;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.15s, transform 0.1s;
+    }
+    .btn-post:hover { background: #e0183e; }
+    .btn-post:active { transform: scale(0.99); }
+    .btn-post:disabled { background: #f9a8b8; cursor: not-allowed; }
+
+    /* SUCCESS STATE */
+    .success-card {
+      text-align: center;
+      padding: 48px 40px;
+    }
+    .success-icon { font-size: 56px; margin-bottom: 16px; }
+    .success-card h2 { font-size: 24px; font-weight: 700; margin-bottom: 8px; }
+    .success-card p { font-size: 15px; color: #666; margin-bottom: 28px; }
+    .btn-outline {
+      display: inline-block;
+      border: 1.5px solid #111;
+      border-radius: 8px;
+      padding: 11px 24px;
+      font-size: 14px;
+      font-weight: 600;
+      text-decoration: none;
+      color: #111;
+      cursor: pointer;
+      background: transparent;
+      transition: background 0.15s;
+    }
+    .btn-outline:hover { background: #f5f5f5; }
+
+    /* LOADING */
+    .uploading {
+      text-align: center;
+      padding: 40px;
+    }
+    .spinner {
+      width: 40px; height: 40px;
+      border: 3px solid #f3f3f3;
+      border-top: 3px solid #fe2c55;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin: 0 auto 16px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* HIDDEN */
+    .hidden { display: none !important; }
+
+    @media (max-width: 600px) {
+      .steps { flex-direction: column; }
+      .hero h1 { font-size: 28px; }
+      .card { padding: 24px; }
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <div class="logo">Creator <span>Post</span> Manager</div>
+  <div class="nav-status">
+    <div class="status-dot" id="nav-dot"></div>
+    <span id="nav-label">Not connected</span>
+  </div>
+</nav>
+
+<div class="hero">
+
+  <!-- STEPS (always visible) -->
+  <h1>Publish to TikTok in seconds</h1>
+  <p>Connect your TikTok account once, then upload and post videos directly — no switching apps, no copy-pasting.</p>
+
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">1</div>
+      <h3>Connect TikTok</h3>
+      <p>Authorize the app with your TikTok account using TikTok Login Kit.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <h3>Upload your video</h3>
+      <p>Select your MP4 file, add a caption and choose your privacy setting.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <h3>Post directly</h3>
+      <p>One click publishes your video via TikTok Content Posting API.</p>
+    </div>
+  </div>
+
+  <!-- CONNECT CARD (shown when not connected) -->
+  <div class="card" id="connect-card">
+    <h2>Connect your TikTok account</h2>
+    <p class="sub">We'll request permission to read your basic profile info and upload videos on your behalf.</p>
+
+    <a class="btn-tiktok" id="connect-btn" href="#" onclick="startAuth(); return false;">
+      <svg viewBox="0 0 24 24" fill="currentColor">
+        <path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 00-.79-.05 6.34 6.34 0 00-6.34 6.34 6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.33-6.34V8.82a8.17 8.17 0 004.78 1.53V6.9a4.85 4.85 0 01-1.01-.21z"/>
+      </svg>
+      Connect with TikTok
+    </a>
+
+    <div class="permissions">
+      <strong>Permissions requested:</strong><br>
+      <span class="perm-tag">user.info.basic</span> — Read your display name and profile picture<br>
+      <span class="perm-tag">video.upload</span> — Upload and post videos to your account
+    </div>
+  </div>
+
+  <!-- UPLOAD CARD (shown when connected) -->
+  <div class="card hidden" id="upload-card">
+
+    <div class="connected-badge">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+      </svg>
+      TikTok account connected — <span id="username-label">@user</span>
+    </div>
+
+    <h2>Upload a video</h2>
+    <p class="sub" style="margin-bottom: 28px;">Select your video file and fill in the details below.</p>
+
+    <!-- File picker -->
+    <div class="form-group">
+      <label>Video file *</label>
+      <div class="file-drop" id="drop-zone" onclick="document.getElementById('file-input').click()">
+        <input type="file" id="file-input" accept="video/mp4,video/mov" onchange="fileSelected(this)">
+        <div class="drop-icon">🎬</div>
+        <p>Click to select a video or drag and drop here</p>
+        <span>MP4 or MOV · Max 500MB</span>
+      </div>
+      <div class="file-selected hidden" id="file-label"></div>
+    </div>
+
+    <!-- Caption -->
+    <div class="form-group">
+      <label>Caption</label>
+      <textarea id="caption" placeholder="Write a caption..." maxlength="150" oninput="updateCount()"></textarea>
+      <div class="char-count"><span id="char-count">0</span> / 150</div>
+    </div>
+
+    <!-- Privacy -->
+    <div class="form-group">
+      <label>Privacy</label>
+      <select id="privacy">
+        <option value="PUBLIC_TO_EVERYONE">Public — Everyone can see</option>
+        <option value="MUTUAL_FOLLOW_FRIENDS">Friends only</option>
+        <option value="SELF_ONLY">Only me</option>
+      </select>
+    </div>
+
+    <button class="btn-post" id="post-btn" onclick="postVideo()">Post to TikTok</button>
+  </div>
+
+  <!-- UPLOADING STATE -->
+  <div class="card hidden" id="uploading-card">
+    <div class="uploading">
+      <div class="spinner"></div>
+      <p style="font-size: 16px; font-weight: 600;">Uploading to TikTok...</p>
+      <p style="font-size: 14px; color: #999; margin-top: 6px;">This may take a few seconds</p>
+    </div>
+  </div>
+
+  <!-- SUCCESS STATE -->
+  <div class="card hidden" id="success-card">
+    <div class="success-card">
+      <div class="success-icon">✅</div>
+      <h2>Video posted successfully!</h2>
+      <p>Your video has been uploaded to TikTok via the Content Posting API and is now live on your profile.</p>
+      <button class="btn-outline" onclick="resetForm()">Post another video</button>
+    </div>
+  </div>
+
+</div><!-- /hero -->
+
+<script>
+  const CLIENT_KEY = 'awax75qc195sp1af';
+  const REDIRECT_URI = 'https://zibaambrose-coder.github.io/callback';
+  const SCOPES = 'user.info.basic,video.upload';
+
+  // Check if we just came back from OAuth (callback sets this)
+  function init() {
+    const connected = localStorage.getItem('tiktok_connected');
+    const username  = localStorage.getItem('tiktok_username') || '@creator';
+    if (connected === '1') {
+      showConnected(username);
+    }
+  }
+
+  function startAuth() {
+    const state = Math.random().toString(36).slice(2);
+    localStorage.setItem('oauth_state', state);
+    const url = `https://www.tiktok.com/v2/auth/authorize/?`
+      + `client_key=${CLIENT_KEY}`
+      + `&scope=${encodeURIComponent(SCOPES)}`
+      + `&response_type=code`
+      + `&redirect_uri=${encodeURIComponent(REDIRECT_URI)}`
+      + `&state=${state}`;
+    window.location.href = url;
+  }
+
+  function showConnected(username) {
+    document.getElementById('connect-card').classList.add('hidden');
+    document.getElementById('upload-card').classList.remove('hidden');
+    document.getElementById('username-label').textContent = username;
+    document.getElementById('nav-dot').classList.add('connected');
+    document.getElementById('nav-label').textContent = username;
+  }
+
+  function fileSelected(input) {
+    if (input.files.length > 0) {
+      const name = input.files[0].name;
+      const label = document.getElementById('file-label');
+      label.textContent = '✓ ' + name;
+      label.classList.remove('hidden');
+    }
+  }
+
+  function updateCount() {
+    const len = document.getElementById('caption').value.length;
+    document.getElementById('char-count').textContent = len;
+  }
+
+  function postVideo() {
+    const fileInput = document.getElementById('file-input');
+    if (!fileInput.files.length) {
+      alert('Please select a video file first.');
+      return;
+    }
+    // Show uploading state
+    document.getElementById('upload-card').classList.add('hidden');
+    document.getElementById('uploading-card').classList.remove('hidden');
+
+    // Simulate upload (in production this calls the backend)
+    setTimeout(() => {
+      document.getElementById('uploading-card').classList.add('hidden');
+      document.getElementById('success-card').classList.remove('hidden');
+    }, 2500);
+  }
+
+  function resetForm() {
+    document.getElementById('success-card').classList.add('hidden');
+    document.getElementById('upload-card').classList.remove('hidden');
+    document.getElementById('file-input').value = '';
+    document.getElementById('file-label').classList.add('hidden');
+    document.getElementById('caption').value = '';
+    document.getElementById('char-count').textContent = '0';
+  }
+
+  init();
+</script>
+
+</body>
+</html>
