@@ -1,47 +1,134 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>TikTok Auth Callback</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TikTok Auth — Creator Post Manager</title>
   <style>
-    body { font-family: monospace; padding: 40px; background: #111; color: #eee; }
-    #code-box { background: #222; border: 1px solid #555; padding: 20px; font-size: 18px; word-break: break-all; margin: 20px 0; }
-    button { padding: 10px 20px; font-size: 16px; cursor: pointer; background: #2196F3; color: white; border: none; border-radius: 4px; }
-    button:hover { background: #1976D2; }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      min-height: 100vh;
+      background: #f5f5f5;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      display: flex; align-items: center; justify-content: center;
+      padding: 24px;
+    }
+    .card {
+      background: #fff;
+      border: 1px solid #e5e5e5;
+      border-radius: 16px;
+      padding: 48px 40px;
+      max-width: 440px;
+      width: 100%;
+      text-align: center;
+    }
+    .icon { font-size: 52px; margin-bottom: 20px; }
+    h2 { font-size: 22px; font-weight: 700; margin-bottom: 10px; }
+    p { font-size: 15px; color: #666; line-height: 1.6; margin-bottom: 28px; }
+    .code-box {
+      background: #f5f5f5;
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      padding: 14px 18px;
+      font-family: monospace;
+      font-size: 13px;
+      word-break: break-all;
+      text-align: left;
+      margin-bottom: 16px;
+      color: #333;
+    }
+    .btn {
+      display: inline-block;
+      background: #fe2c55;
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      padding: 14px 32px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+      transition: background 0.15s;
+    }
+    .btn:hover { background: #e0183e; }
+    .btn-outline {
+      display: inline-block;
+      margin-top: 12px;
+      background: transparent;
+      border: 1.5px solid #333;
+      color: #333;
+      border-radius: 10px;
+      padding: 11px 24px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+    }
+    .copy-row { display: flex; gap: 8px; margin-bottom: 20px; }
+    .copy-row .code-box { flex: 1; margin: 0; }
+    .copy-btn {
+      background: #111; color: #fff; border: none;
+      border-radius: 8px; padding: 0 16px; font-size: 13px;
+      cursor: pointer; white-space: nowrap; font-family: inherit;
+      font-weight: 500;
+    }
+    .error-state { color: #dc2626; }
   </style>
 </head>
 <body>
-  <h2>TikTok Authorization</h2>
-  <div id="status">Reading authorization code...</div>
-  <div id="code-box" style="display:none"></div>
-  <button id="copy-btn" style="display:none" onclick="copyCode()">Copy Code</button>
-  <p id="instructions" style="display:none">Paste this code into the terminal where tiktok_auth.py is waiting.</p>
+<div class="card" id="card">
+  <div class="icon" id="icon">⏳</div>
+  <h2 id="title">Processing authorization...</h2>
+  <p id="desc">Please wait while we complete your TikTok connection.</p>
+  <div id="content"></div>
+</div>
 
-  <script>
-    const params = new URLSearchParams(window.location.search);
-    const code = params.get('code');
-    const error = params.get('error');
-    const state = params.get('state');
+<script>
+  const params = new URLSearchParams(window.location.search);
+  const code  = params.get('code');
+  const error = params.get('error');
 
-    if (code) {
-      document.getElementById('status').innerText = 'Authorization successful! Your code:';
-      const box = document.getElementById('code-box');
-      box.innerText = code;
-      box.style.display = 'block';
-      document.getElementById('copy-btn').style.display = 'inline-block';
-      document.getElementById('instructions').style.display = 'block';
-    } else if (error) {
-      document.getElementById('status').innerText = 'Authorization failed: ' + error;
-    } else {
-      document.getElementById('status').innerText = 'No code received. Did you authorize the app?';
-    }
+  if (code) {
+    // Store connected state for the app page
+    localStorage.setItem('tiktok_connected', '1');
+    localStorage.setItem('tiktok_auth_code', code);
+    // Try to get a username placeholder — in production this is fetched via API
+    localStorage.setItem('tiktok_username', '@your_account');
 
-    function copyCode() {
-      const code = document.getElementById('code-box').innerText;
-      navigator.clipboard.writeText(code).then(() => {
-        document.getElementById('copy-btn').innerText = 'Copied!';
-        setTimeout(() => document.getElementById('copy-btn').innerText = 'Copy Code', 2000);
-      });
-    }
-  </script>
+    document.getElementById('icon').textContent = '✅';
+    document.getElementById('title').textContent = 'TikTok connected!';
+    document.getElementById('desc').textContent = 'Your account has been authorized. The authorization code below is used by the app to request an access token via the TikTok API.';
+
+    document.getElementById('content').innerHTML = `
+      <div class="copy-row">
+        <div class="code-box" id="code-box">${code}</div>
+        <button class="copy-btn" onclick="copyCode()">Copy</button>
+      </div>
+      <a class="btn" href="/app.html">Continue to Creator Post Manager →</a>
+      <br>
+      <small style="display:block;margin-top:12px;color:#999;font-size:12px;">
+        In production, the app exchanges this code for an access token automatically.
+      </small>
+    `;
+  } else if (error) {
+    document.getElementById('icon').textContent = '❌';
+    document.getElementById('title').textContent = 'Authorization failed';
+    document.getElementById('desc').innerHTML = `<span class="error-state">Error: ${error}</span>`;
+    document.getElementById('content').innerHTML = `<a class="btn" href="/app.html">← Back to app</a>`;
+  } else {
+    document.getElementById('icon').textContent = '⚠️';
+    document.getElementById('title').textContent = 'No code received';
+    document.getElementById('desc').textContent = 'Something went wrong with the authorization flow.';
+    document.getElementById('content').innerHTML = `<a class="btn" href="/app.html">← Back to app</a>`;
+  }
+
+  function copyCode() {
+    const code = document.getElementById('code-box').textContent;
+    navigator.clipboard.writeText(code).then(() => {
+      document.querySelector('.copy-btn').textContent = 'Copied!';
+      setTimeout(() => document.querySelector('.copy-btn').textContent = 'Copy', 2000);
+    });
+  }
+</script>
 </body>
 </html>
